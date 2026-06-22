@@ -28,7 +28,7 @@ export default function Navbar() {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-sm">
             <Heart className="h-5 w-5" />
           </div>
-          MedCare
+          Hospify
         </Link>
 
         <div className="hidden items-center gap-1 md:flex">
@@ -42,7 +42,7 @@ export default function Navbar() {
           ) : (
             <>
               <Link to={role === "admin" ? "/admin" : "/dashboard"} className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">Dashboard</Link>
-              {role === "client" && (
+              {role === "patient" && (
                 <Link to="/book-appointment" className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">Book Appointment</Link>
               )}
               <Button size="sm" variant="outline" className="ml-2" onClick={handleLogout}>Logout</Button>
@@ -67,7 +67,7 @@ export default function Navbar() {
             ) : (
               <>
                 <Link to={role === "admin" ? "/admin" : "/dashboard"} onClick={() => setMobileOpen(false)} className="rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors">Dashboard</Link>
-                {role === "client" && (
+                {role === "patient" && (
                   <Link to="/book-appointment" onClick={() => setMobileOpen(false)} className="rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors">Book Appointment</Link>
                 )}
                 <Button size="sm" variant="outline" className="mt-2" onClick={() => { setMobileOpen(false); handleLogout(); }}>Logout</Button>

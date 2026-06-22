@@ -1,43 +1,64 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
-export type UserRole = "client" | "admin" | null;
+import { authService } from "@/services/auth.service";
+import type { AuthUser, RegisterPayload, UserRole } from "@/types/auth";
+
+type AuthRole = UserRole | null;
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  role: UserRole;
+  role: AuthRole;
   userName: string;
-  login: (email: string, password: string, role: UserRole) => void;
-  register: (name: string, email: string, password: string, role: UserRole) => void;
+  user: AuthUser | null;
+  login: (email: string, password: string) => Promise<AuthUser>;
+  register: (payload: RegisterPayload) => Promise<{ verificationRequired: boolean; message: string }>;
+  verifyOtp: (email: string, otp: string) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [role, setRole] = useState<UserRole>(null);
-  const [userName, setUserName] = useState("");
+  const [user, setUser] = useState<AuthUser | null>(() => authService.getStoredUser());
+  const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(authService.getStoredToken() && authService.getStoredUser()));
+  const [role, setRole] = useState<AuthRole>(() => authService.getStoredUser()?.role ?? null);
+  const [userName, setUserName] = useState(() => authService.getStoredUser()?.fullName ?? "");
 
-  const login = (_email: string, _password: string, loginRole: UserRole) => {
+  const applyAuthenticatedUser = (authenticatedUser: AuthUser) => {
     setIsAuthenticated(true);
-    setRole(loginRole);
-    setUserName(loginRole === "admin" ? "Dr. Admin" : "John Doe");
+    setRole(authenticatedUser.role);
+    setUserName(authenticatedUser.fullName);
+    setUser(authenticatedUser);
   };
 
-  const register = (name: string, _email: string, _password: string, regRole: UserRole) => {
-    setIsAuthenticated(true);
-    setRole(regRole);
-    setUserName(name);
+  const login = async (email: string, password: string) => {
+    const response = await authService.login({ email, password });
+    applyAuthenticatedUser(response.user);
+    return response.user;
+  };
+
+  const register = async (payload: RegisterPayload) => {
+    const response = await authService.register(payload);
+    return {
+      verificationRequired: response.verificationRequired,
+      message: response.message,
+    };
+  };
+
+  const verifyOtp = async (email: string, otp: string) => {
+    await authService.verifyOtp({ email, otp });
   };
 
   const logout = () => {
+    authService.logout();
     setIsAuthenticated(false);
     setRole(null);
     setUserName("");
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, role, userName, login, register, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, role, userName, user, login, register, verifyOtp, logout }}>
       {children}
     </AuthContext.Provider>
   );

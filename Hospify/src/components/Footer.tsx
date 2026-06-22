@@ -15,7 +15,7 @@ export default function Footer() {
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-accent-foreground">
                 <Heart className="h-5 w-5" />
               </div>
-              MedCare HMS
+              Hospify
             </div>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-primary-foreground/60">
               Simplifying healthcare management for clinics and hospitals worldwide. Book, manage, and track — all in one place.
@@ -35,7 +35,7 @@ export default function Footer() {
             <h4 className="mb-4 font-heading text-sm font-semibold uppercase tracking-wider text-primary-foreground/80">Contact</h4>
             <div className="flex flex-col gap-2.5">
               <span className="flex items-center gap-2 text-sm text-primary-foreground/60">
-                <Mail className="h-4 w-4" /> support@medcare.com
+                <Mail className="h-4 w-4" /> support@hospify.com
               </span>
               <span className="flex items-center gap-2 text-sm text-primary-foreground/60">
                 <Phone className="h-4 w-4" /> +1 (555) 000-0000
@@ -49,7 +49,7 @@ export default function Footer() {
         
         <div className="mt-12 border-t border-primary-foreground/10 pt-6 text-center">
           <p className="text-xs text-primary-foreground/40">
-            © 2026 MedCare HMS. All rights reserved.
+            © 2026 Hospify. All rights reserved.
           </p>
         </div>
       </div>

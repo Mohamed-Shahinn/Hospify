@@ -1,3 +1,3 @@
-# Welcome to your Lovable project
+# Hospify
 
-TODO: Document your project here
+A React, Vite, and TypeScript frontend for the Hospify Hospital Management System.

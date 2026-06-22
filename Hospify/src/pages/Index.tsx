@@ -163,9 +163,9 @@ export default function Index() {
           </div>
           <div>
             <span className="mb-3 inline-block text-xs font-bold uppercase tracking-widest text-accent">Who We Are</span>
-            <h2 className="font-heading text-3xl font-bold text-primary md:text-4xl">About MedCare Clinics</h2>
+            <h2 className="font-heading text-3xl font-bold text-primary md:text-4xl">About Hospify</h2>
             <p className="mt-5 leading-relaxed text-muted-foreground">
-              MedCare is a premier medical care center offering high-quality health care services. With outpatient and inpatient day care, our polyclinic provides a wide range of medical services — from GI endoscopies to advanced surgical procedures.
+              Hospify is a hospital management platform supporting high-quality healthcare services. From outpatient appointments to inpatient care, it brings a wide range of medical services together in one coordinated system.
             </p>
             <p className="mt-3 leading-relaxed text-muted-foreground">
               Our commitment goes beyond treatment, emphasizing disease prevention through education and routine checkups. Our highly qualified doctors across 30+ specialties work together as one skilled team, delivering personalized diagnosis, treatment, and follow-up.
@@ -275,7 +275,7 @@ export default function Index() {
               Book Your Visit Today
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
-              Join thousands of patients who trust MedCare for accessible, expert healthcare.
+              Join thousands of patients who trust Hospify for accessible, expert healthcare.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Button size="lg" onClick={() => navigate("/register")}>Book Appointment</Button>
