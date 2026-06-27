@@ -1,4 +1,4 @@
-dependenciesrontendepository-urlepository-url Hospify
+# Hospify
 
 A modern Full-Stack Hospital Management System built with React, Node.js, Express, TypeScript, and MongoDB.
 
