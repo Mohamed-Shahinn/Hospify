@@ -1,4 +1,4 @@
-# Hospify
+dependenciesrontendepository-urlepository-url Hospify
 
 A modern Full-Stack Hospital Management System built with React, Node.js, Express, TypeScript, and MongoDB.
 
@@ -181,7 +181,7 @@ server/
 ### Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone <https://github.com/Mohamed-Shahinn/Hospify>
 ```
 
 ### Install frontend dependencies
