@@ -1,0 +1,213 @@
+const User = require('../models/User');
+const Patient = require('../models/Patient');
+const Doctor = require('../models/Doctor');
+const Hospital = require('../models/Hospital');
+const authService = require('../services/auth.service');
+const asyncHandler = require('../utils/asyncHandler');
+const { successResponse } = require('../utils/apiResponse');
+const { AppError } = require('../middleware/errorHandler');
+const { ROLES } = require('../config/constants');
+
+/**
+ * POST /api/auth/register
+ * Register a new user and create their role-specific profile.
+ */
+const register = asyncHandler(async (req, res) => {
+  const { name, email, password, role, phone, ...profileData } = req.body;
+
+  const { user, accessToken, refreshToken } = await authService.register({
+    name, email, password, role, phone,
+  });
+
+  if (role === ROLES.PATIENT) {
+    await Patient.create({
+      userId: user._id,
+      dateOfBirth: profileData.dateOfBirth || new Date('2000-01-01'),
+      gender: profileData.gender || 'prefer_not_to_say',
+      ...profileData,
+    });
+  } else if (role === ROLES.DOCTOR) {
+    if (!profileData.licenseNumber || !profileData.specializations) {
+      throw new AppError('Doctors must provide licenseNumber and specializations during registration.', 400);
+    }
+    await Doctor.create({
+      userId: user._id,
+      licenseNumber: profileData.licenseNumber,
+      specializations: profileData.specializations,
+      ...profileData,
+    });
+  } else if (role === ROLES.HOSPITAL) {
+    if (!profileData.registrationNumber || !profileData.hospitalName) {
+      throw new AppError('Hospitals must provide registrationNumber and hospitalName during registration.', 400);
+    }
+    await Hospital.create({
+      userId: user._id,
+      name: profileData.hospitalName,
+      registrationNumber: profileData.registrationNumber,
+      type: profileData.type || 'private',
+      address: profileData.address || { street: '', city: '' },
+      ...profileData,
+    });
+  }
+
+  return successResponse(res, {
+    status: 201,
+    message: 'Account created successfully. Welcome to Hospify!',
+    data: {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      accessToken,
+      refreshToken,
+    },
+  });
+});
+
+/**
+ * POST /api/auth/login
+ */
+const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  const { user, accessToken, refreshToken } = await authService.login({ email, password });
+
+  return successResponse(res, {
+    message: 'Logged in successfully.',
+    data: {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+      },
+      accessToken,
+      refreshToken,
+    },
+  });
+});
+
+/**
+ * POST /api/auth/logout
+ */
+const logout = asyncHandler(async (req, res) => {
+  await authService.logout(req.user._id);
+
+  return successResponse(res, {
+    message: 'Logged out successfully.',
+    data: null,
+  });
+});
+
+/**
+ * POST /api/auth/refresh
+ */
+const refreshToken = asyncHandler(async (req, res) => {
+  const { refreshToken: token } = req.body;
+
+  const tokens = await authService.refreshTokens(token);
+
+  return successResponse(res, {
+    message: 'Tokens refreshed successfully.',
+    data: tokens,
+  });
+});
+
+/**
+ * GET /api/auth/me
+ */
+const getMe = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  let profile = null;
+  if (req.user.role === ROLES.PATIENT) {
+    profile = await Patient.findOne({ userId: req.user._id });
+  } else if (req.user.role === ROLES.DOCTOR) {
+    profile = await Doctor.findOne({ userId: req.user._id }).populate('hospitals', 'name address.city');
+  } else if (req.user.role === ROLES.HOSPITAL) {
+    profile = await Hospital.findOne({ userId: req.user._id });
+  }
+
+  return successResponse(res, {
+    message: 'User profile retrieved.',
+    data: { user, profile },
+  });
+});
+
+/**
+ * PUT /api/auth/me/profile
+ */
+const updateUserProfile = asyncHandler(async (req, res) => {
+  const { name, phone } = req.body;
+  const update = {};
+  if (name) update.name = name;
+  if (phone) update.phone = phone;
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { $set: update },
+    { new: true, runValidators: true }
+  ).select('-password -refreshToken');
+
+  return successResponse(res, {
+    message: 'User profile updated.',
+    data: user,
+  });
+});
+
+/**
+ * POST /api/auth/forgot-password
+ * STEP 1: Send OTP to user's email
+ */
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  await authService.forgotPassword(email);
+
+  return successResponse(res, {
+    message: 'OTP sent to your email.',
+  });
+});
+
+/**
+ * POST /api/auth/verify-otp
+ * STEP 2: Verify the OTP code
+ */
+const verifyOTP = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  await authService.verifyOTP(email, otp);
+
+  return successResponse(res, {
+    message: 'OTP verified successfully.',
+  });
+});
+
+/**
+ * POST /api/auth/reset-password
+ * STEP 3: Set new password after OTP is verified
+ */
+const resetPassword = asyncHandler(async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  await authService.resetPassword(email, newPassword);
+
+  return successResponse(res, {
+    message: 'Password reset successfully.',
+  });
+});
+
+module.exports = {
+  register,
+  login,
+  logout,
+  refreshToken,
+  getMe,
+  updateUserProfile,
+  forgotPassword,
+  verifyOTP,
+  resetPassword,
+};
